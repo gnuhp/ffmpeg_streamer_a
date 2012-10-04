@@ -1,0 +1,73 @@
+20121004: Status
+
+Video / audio is UP and runing: 
+
+Video : use java surfaceholder and draw on Canvas. 
+        callback from native whenever image is received. (not optimized but work for now)
+Audio : use java PCMPlayer (inherited from MSC3 app) 
+        Can support both PCM & adpcm (decode to PCM in native before return to java )
+        callback from native whenever sound is decoded (can do in background: however need to implement buffer management)
+
+HOW TO BUILD: 
+
+1. Build x264 
+cd jni/x264
+./build_android.sh 
+cd ..
+
+2. Build ffmpeg (using 0.10.3) 
+cd ffmpeg-0.10.3 
+./build_android.sh 
+(long time)
+cd .. 
+
+3. Build the rest
+cd /home/phung/workspace/FFMpeg
+ndk-build 
+(this will build libmediaplayer, zjni and copy all libraries to java accessible location) 
+
+
+Back To Java (Eclipse)
+Refresh the code base
+Run the test app. 
+
+
+
+
+
+
+20120921: FFMPEG work status
+
+
+
+On Linux, able to compile the test app that can pull data from rtmp stream , no real audio/video playing supported. 
+Location: 
+/home/phung/workspace_c/test_sdl/ffmpeg-0.10.3
+    ./build_linux.sh - stripped down config file 
+
+/home/phung/workspace_c/test_sdl/libmediaplayer
+    make clean all --> libmediaplayer.a (needed by testApp)
+
+/home/phung/workspace_c/test_sdl/libmediaplayer/testApp
+    make clean all
+    ./testApp 
+
+
+
+On Android, Built ffmpeg-0.10.3 with the same configuration as above (check build_android.sh and build_linux.sh)
+Location: 
+/home/phung/workspace/FFmpegTest - simple app trying to open file and get info 
+        Can open flv file, and able to read h264 format, flv format 
+        Can't open stream yet. 
+           error: "..Cannot open connection tcp://192.168.5.106:1935"
+
+/home/phung/workspace/FFMpeg - streaming app under development 
+Stage 1: try to port over the mediaplayer + JNI interfaces. 
+ISSUE: some issue with JNI code. May need to simplify the current implementation. 
+       Arrive at the same error as app above with hardcording mediaplayer creation inside setDataSource (jni call)
+       --> same status -- can't open stream yet. 
+
+Stage 2: implement audio / video support 
+ --- NOT STARTED--- 
+
+

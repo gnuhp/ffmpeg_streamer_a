@@ -1,0 +1,1 @@
+ffmpeg -re -i ~/Downloads/abc.h264 -vcodec copy  -s 320x240 -r 25 -pix_fmt yuvj420p  -f flv  rtmp://112.213.86.13:1935/live/cam1.stream

@@ -1,0 +1,26 @@
+ ---- EXPERIMENT -- dont use 
+ffmpeg -re -i ~/Downloads/abc.h264 -vcodec copy  -s 320x240 -r 25 -pix_fmt yuvj420p -metadata streamName=live -f flv rtmp://127.0.0.1:1935/flvplayback
+
+
+
+ ffmpeg -y -i rtmp://[SomeURL]/live/xbnhd live=1 -s 640x360 -r 30 -b 500k -bt 540k -coder 0 -bf 0 -flags2 -wpred-dct8x8 -level 13 -maxrate 500k -bufsize 3M -ar 44100 -ab 192k -g 500 -metadata streamName=xbnsd -f flv tcp://127.0.0.2:6666
+
+
+
+
+--- STream to local crtmp WORKS
+ffmpeg -re -i ~/Downloads/abc.h264 -vcodec copy  -s 320x240 -r 25 -pix_fmt yuvj420p -metadata streamName=live -f flv tcp://127.0.0.1:6666
+
+
+-- Pull from local crtmp - WORKS
+
+ffmpeg -i rtmp://127.0.0.1:1935/flvplayback/live test.flv
+ffmpeg -i rtmp://127.0.0.1:1935/flvplayback/live  test.flv
+
+
+
+---- Merge audio to video stream 
+cam1_dump.flv : video only file (no audio) (stream id is #0:0)
+test_audio.mp3 : mp3 audio ( ffprobe return the stream id is #1:0)
+
+ffmpeg  -i ~/Downloads/cam1_dump.flv -i ~/Downloads/test_audio.mp3  -map 0:0 -map 1:0 -c copy test_merge.flv
