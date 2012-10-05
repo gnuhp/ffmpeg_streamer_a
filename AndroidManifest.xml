@@ -17,6 +17,7 @@
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
             <intent-filter>
+               
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -24,8 +25,7 @@
             android:name=".FFMpegFileExplorer"
             android:label="@string/select_input_file" >
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
+                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

@@ -27,7 +27,7 @@ function dirty_build
 {
 make  -j4 install
 
-$PREBUILT/bin/arm-linux-androideabi-ar d libavcodec/libavcodec.a inverse.o
+#$PREBUILT/bin/arm-linux-androideabi-ar d libavcodec/libavcodec.a inverse.o
 
 #Link all library to 1 libffmpeg.so
 $PREBUILT/bin/arm-linux-androideabi-ld -rpath-link=$PLATFORM/usr/lib \
@@ -125,7 +125,7 @@ function build_one
 make clean
 make  -j4 install
 
-$PREBUILT/bin/arm-linux-androideabi-ar d libavcodec/libavcodec.a inverse.o
+#$PREBUILT/bin/arm-linux-androideabi-ar d libavcodec/libavcodec.a inverse.o
 
 
 #Link all library to 1 libffmpeg.so
@@ -142,6 +142,33 @@ $PREBUILT/bin/arm-linux-androideabi-ld -rpath-link=$PLATFORM/usr/lib \
     -lavutil -lswscale \
     -lswresample -lavfilter \
     -lavdevice -lx264 
+
+
+}
+
+
+function configureARMv7a 
+{
+echo ">>>>>>>>>> Config env for Armv7-a With NEON support <<<<<<<<<<<<<<"
+#arm v7n
+CPU=armv7-a
+OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=neon -marm -march=$CPU -mtune=cortex-a8 "
+#OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=vfpv3-d16  -marm -march=$CPU -mtune=cortex-a8 -mthumb -D__thumb__ "
+PREFIX=./android/$CPU 
+ADDITIONAL_CONFIGURE_FLAG=
+#build_one
+
+}
+
+function configureARM
+{
+echo ">>>>>>>>>> Config env for Arm-generic Without  NEON support <<<<<<<<<<<<<<"
+#arm 
+CPU=armeabi
+OPTIMIZE_CFLAGS=""
+PREFIX=./android/$CPU 
+X264_PREFIX=../x264/android/$CPU
+ADDITIONAL_CONFIGURE_FLAG=
 
 
 }
@@ -167,13 +194,6 @@ $PREBUILT/bin/arm-linux-androideabi-ld -rpath-link=$PLATFORM/usr/lib \
 #ADDITIONAL_CONFIGURE_FLAG=
 #build_one
 
-##arm v7n
-#CPU=armv7-a
-##OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=neon -marm -march=$CPU -mtune=cortex-a8"
-#OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=vfpv3-d16  -marm -march=$CPU -mtune=cortex-a8 -mthumb -D__thumb__ "
-#PREFIX=./android/$CPU 
-#ADDITIONAL_CONFIGURE_FLAG=--enable-armv5te
-##build_one
 
 #arm v6+vfp
 #CPU=armv6
@@ -183,21 +203,24 @@ $PREBUILT/bin/arm-linux-androideabi-ld -rpath-link=$PLATFORM/usr/lib \
 #build_one
 
 
-#arm 
-CPU=armeabi
-OPTIMIZE_CFLAGS=""
-PREFIX=./android/$CPU 
-X264_PREFIX=../x264/android/$CPU
-ADDITIONAL_CONFIGURE_FLAG=
-
 
 
 if [ $# -lt 1 ] ; then 
 #full rebuild
+
+configureARMv7a
+
 build_one
+
+configureARM
+
+build_one
+
 
 elif [ $1 -eq 0 ] ; then 
 #- Dont reconfigure - just dirty build
+echo "**************** WARNING: this will just rebuild the last configuration (arm or armv7) not both "
+
 dirty_build
 fi
 

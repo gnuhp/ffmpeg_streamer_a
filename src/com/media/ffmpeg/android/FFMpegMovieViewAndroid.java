@@ -54,8 +54,6 @@ public class FFMpegMovieViewAndroid extends SurfaceView {
     }
     
     public void setVideoPath(String filePath) throws IllegalArgumentException, IllegalStateException, IOException {
-    	
-    	
     	this.filePath = filePath; 
 		
 	}
@@ -85,6 +83,7 @@ public class FFMpegMovieViewAndroid extends SurfaceView {
     	
     	mPlayer.suspend();
 		mPlayer.stop();
+		mPlayer.release();
 		Log.d(TAG, "released");
     }
     

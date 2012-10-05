@@ -64,6 +64,8 @@ public class FFMpegPlayerActivity extends Activity {
 	protected void onStop()
 	{
 		super.onStop();
+		
+		
 	}
 	
 	
