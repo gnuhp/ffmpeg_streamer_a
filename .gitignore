@@ -6,3 +6,6 @@
 *.a
 *.pod
 *.swp
+jni/ffmpeg-0.10.3/android/*
+jni/ffmpeg-0.10.3/doc/*
+jni/x264/android/*

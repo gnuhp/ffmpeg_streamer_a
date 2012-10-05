@@ -25,9 +25,11 @@ PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86
 
 function dirty_build
 {
-make  -j4 install
+make  -j4 
 
-#$PREBUILT/bin/arm-linux-androideabi-ar d libavcodec/libavcodec.a inverse.o
+$PREBUILT/bin/arm-linux-androideabi-ar d libavcodec/libavcodec.a inverse.o
+
+make install
 
 #Link all library to 1 libffmpeg.so
 $PREBUILT/bin/arm-linux-androideabi-ld -rpath-link=$PLATFORM/usr/lib \
@@ -89,9 +91,7 @@ function build_one
     --enable-protocol=udp \
     --enable-avformat \
     --enable-avcodec \
-    --enable-encoder=mjpeg \
-    --enable-decoder=mjpeg \
-    --enable-decoder=h263 \
+    --enable-decoder=imc \
     --enable-decoder=mpeg4 \
     --enable-decoder=mpeg \
     --enable-encoder=h264 \
@@ -123,9 +123,11 @@ function build_one
 
 
 make clean
-make  -j4 install
+make  -j4 
 
-#$PREBUILT/bin/arm-linux-androideabi-ar d libavcodec/libavcodec.a inverse.o
+$PREBUILT/bin/arm-linux-androideabi-ar d libavcodec/libavcodec.a inverse.o
+
+make install
 
 
 #Link all library to 1 libffmpeg.so
@@ -152,10 +154,10 @@ function configureARMv7a
 echo ">>>>>>>>>> Config env for Armv7-a With NEON support <<<<<<<<<<<<<<"
 #arm v7n
 CPU=armv7-a
-OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=neon -marm -march=$CPU -mtune=cortex-a8 "
-#OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=vfpv3-d16  -marm -march=$CPU -mtune=cortex-a8 -mthumb -D__thumb__ "
-PREFIX=./android/$CPU 
-ADDITIONAL_CONFIGURE_FLAG=
+OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=neon -marm -march=$CPU -mtune=cortex-a8 -mthumb -D__thumb__ "
+PREFIX=./android/armeabi-v7a 
+ADDITIONAL_CONFIGURE_FLAG=--enable-neon
+X264_PREFIX=../x264/android/$CPU
 #build_one
 
 }
@@ -208,13 +210,13 @@ ADDITIONAL_CONFIGURE_FLAG=
 if [ $# -lt 1 ] ; then 
 #full rebuild
 
-configureARMv7a
+configureARMv7a 
 
-build_one
+build_one || exit 1
 
 configureARM
 
-build_one
+build_one || exit 1
 
 
 elif [ $1 -eq 0 ] ; then 

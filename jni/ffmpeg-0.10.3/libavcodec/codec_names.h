@@ -16,8 +16,7 @@ case CODEC_ID_RV10:
 case CODEC_ID_RV20:
     return "rv20";
 case CODEC_ID_MJPEG:
-    { extern AVCodec ff_mjpeg_decoder;
-      return ff_mjpeg_decoder.name; }
+    return "mjpeg";
 case CODEC_ID_MJPEGB:
     return "mjpegb";
 case CODEC_ID_LJPEG:
@@ -546,7 +545,8 @@ case CODEC_ID_WAVPACK:
 case CODEC_ID_DSICINAUDIO:
     return "dsicinaudio";
 case CODEC_ID_IMC:
-    return "imc";
+    { extern AVCodec ff_imc_decoder;
+      return ff_imc_decoder.name; }
 case CODEC_ID_MUSEPACK7:
     return "musepack7";
 case CODEC_ID_MLP:
