@@ -39,6 +39,9 @@ jmethodID Output::native_updateVideoSurface;
 jobject Output::mediaPlayerObject;
 
 void * Output::pictureRGB;
+ANativeWindow* Output::theNativeWindow;
+ANativeWindow_Buffer * Output::pictureBuffer;
+
 
 int Output::AudioDriver_register(JNIEnv * env, jobject thiz)
 {
@@ -201,6 +204,8 @@ int Output::VideoDriver_register(JNIEnv* env, jobject jsurface)
     }   
 
 
+    // obtain a native window from a Java surface
+    theNativeWindow = ANativeWindow_fromSurface(env, jsurface);
 
     return 0; 
 }
@@ -209,7 +214,27 @@ int Output::VideoDriver_unregister()
 {
 
     LOGI(9,"Output::VideoDriver_unregister"); 
-//	return AndroidSurface_unregister();
+    // make sure we don't leak native windows
+    if (theNativeWindow != NULL) {
+        ANativeWindow_release(theNativeWindow);
+        theNativeWindow = NULL;
+    }
+
+#if 0
+    if (pictureBuffer != NULL)
+    {
+        av_free(pictureBuffer->bits);
+        free(pictureBuffer);
+        pictureBuffer = NULL;
+    }
+
+    if (pictureRGB != NULL)
+    {
+        av_free(pictureRGB); 
+        pictureRGB = NULL;
+    }
+#endif 
+
     return 0; 
 }
 
@@ -229,16 +254,29 @@ int Output::VideoDriver_getPixels(int width, int height, void** pixels_out)
 
 
     *pixels_out = pictureRGB; 
+    
+    pictureBuffer = (ANativeWindow_Buffer *) malloc( sizeof(ANativeWindow_Buffer)); 
+    pictureBuffer->width =width; 
+    pictureBuffer->height = height; 
+    pictureBuffer->format = WINDOW_FORMAT_RGB_565;
+    pictureBuffer->bits =  malloc(width*height*sizeof(uint16_t)); 
 
+    if (theNativeWindow != NULL)
+    {
+        ANativeWindow_setBuffersGeometry(theNativeWindow, 
+                pictureBuffer->width, pictureBuffer->height, 
+                pictureBuffer->format); 
+    }
 
-//	return AndroidSurface_getPixels(width, height, pixels);
+    LOGI(9,"Output::VideoDriver_getPixels: picRGB size: %d bitsize:%d",size, width*height*sizeof(uint16_t)); 
+
     return 0; 
 }
 
 int Output::VideoDriver_updateSurface( )
 {
 
-
+#if 0 
     JNIEnv * env = getJNIEnv(); 
     if (env == NULL)
     {
@@ -280,6 +318,19 @@ int Output::VideoDriver_updateSurface( )
 
     env->DeleteLocalRef(bitmap); 
 
-//	return AndroidSurface_updateSurface();
+
+#else
+
+    //Another way: update pictureRGB directly to theNativeWindow
+
+
+    if ( 0 > ANativeWindow_lock( theNativeWindow, pictureBuffer, NULL ) ) {
+        return 0;
+    }
+    //Copy picture 
+    memcpy(pictureBuffer->bits, pictureRGB, 640*480*sizeof(uint16_t));
+
+    ANativeWindow_unlockAndPost( theNativeWindow );
+#endif
     return 0; 
 }

@@ -22,7 +22,7 @@ LOCAL_SRC_FILES += \
 #				-lz -lm -llog 
 LOCAL_LDLIBS := -L$(LOCAL_PATH)/../ffmpeg-0.10.3/android/armeabi \
 				-lffmpeg \
-				-lz -lm -llog  -ljnigraphics
+				-lz -lm -llog  -ljnigraphics -landroid
 
 #LOCAL_STATIC_LIBRARIES := libavcodec libavformat libavutil libpostproc libswscale
 LOCAL_MODULE := libmediaplayer

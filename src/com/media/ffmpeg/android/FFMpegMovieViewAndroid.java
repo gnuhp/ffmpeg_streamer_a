@@ -64,6 +64,7 @@ public class FFMpegMovieViewAndroid extends SurfaceView {
     private void openVideo(SurfaceHolder surfHolder) {
     	try {
         	mPlayer.setDataSource(filePath);
+        	//ORDER is important -- Set display before prepare()!!!
     		mPlayer.setDisplay(surfHolder);
 			mPlayer.prepare();
 		} catch (IllegalStateException e) {

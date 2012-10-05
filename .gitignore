@@ -9,3 +9,12 @@
 jni/ffmpeg-0.10.3/android/*
 jni/ffmpeg-0.10.3/doc/*
 jni/x264/android/*
+bin/
+gen/
+jni/ffmpeg-0.10.3/ffmpeg
+jni/ffmpeg-0.10.3/ffmpeg_g
+jni/ffmpeg-0.10.3/ffprobe
+jni/ffmpeg-0.10.3/ffprobe_g
+jni/ffmpeg-0.10.3/ffserver
+jni/ffmpeg-0.10.3/ffserver_g
+

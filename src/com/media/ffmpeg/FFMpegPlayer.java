@@ -531,6 +531,21 @@ public class FFMpegPlayer
     
     //////////////////////////// VIDEO 
     
+    /*20121005 : these func:
+     *   native_getNewBitMap(), native_updateVideoSurface()
+                 are no longer used 
+                 since creating new bitmap every time is too expensive
+                  (memory wise- allocate & deallocate)
+                  
+       Optimized Way: control image update in Native
+                  Pre-allocate 2 buffers (one for ffmpeg decoder -to dump out raw image 
+                                          another is from mSurface - ) 
+                  NO need to create new bitmap everytime. 
+       TODO: Currently we do some re-scaling with bitmap in Java code 
+             native_updateVideoSurface() -- May need to do the same for native
+                  
+    */
+    
     private Bitmap native_getNewBitMap()
     {
     	Bitmap bitMap = Bitmap.createBitmap(640, 480, Bitmap.Config.RGB_565);

@@ -3,8 +3,7 @@
 #include <sys/types.h>
 #include <jni.h>
 
-//#include <android/audiotrack.h>
-//#include <android/surface.h>
+#include <android/native_window_jni.h>
 
 class Output
 {
@@ -18,6 +17,9 @@ class Output
     static jmethodID native_updateVideoSurface;
 
     static void * pictureRGB; 
+
+    static ANativeWindow* theNativeWindow;
+    static ANativeWindow_Buffer * pictureBuffer; 
 
     public:	
 
