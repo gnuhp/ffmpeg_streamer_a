@@ -65,7 +65,8 @@ public class FFMpegFileExplorer extends ListActivity {
 			public void onClick(View v) {
 				//String url = "rtmp://192.168.5.103:1935/flvplayback/live";
 
-				String url = "http://192.168.5.103:8090/aaa";
+				String url = "http://192.168.68.104:8090/aaa";
+				//String url = "http://192.168.1.104:8090/aaa";
 				Log.d(TAG, " Try to stream  from url : " + url);
 				startPlayer(url);
 
