@@ -34,23 +34,7 @@ public class FFMpegPlayerActivity extends Activity {
 			try {
 				FFMpeg ffmpeg = new FFMpeg();
 				mMovieView = ffmpeg.getMovieView(this);
-				try {
-					mMovieView.setVideoPath(filePath);
-				} catch (IllegalArgumentException e) {
-					
-					Log.e(TAG, "Can't set video: " + e.getMessage());
-					e.printStackTrace();
-					FFMpegMessageBox.show(this, e);
-				} catch (IllegalStateException e) {
-					Log.e(TAG, "Can't set video: " + e.getMessage());
-					e.printStackTrace();
-					FFMpegMessageBox.show(this, e);
-				} catch (IOException e) {
-					Log.e(TAG, "Can't set video: " + e.getMessage());
-					e.printStackTrace();
-					FFMpegMessageBox.show(this, e);
-				}
-				
+				mMovieView.setVideoPath(filePath);
 				
 				setContentView(mMovieView);
 			} catch (FFMpegException e) {

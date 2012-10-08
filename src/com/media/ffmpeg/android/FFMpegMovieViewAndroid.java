@@ -53,7 +53,8 @@ public class FFMpegMovieViewAndroid extends SurfaceView {
         mMediaController.setEnabled(true);
     }
     
-    public void setVideoPath(String filePath) throws IllegalArgumentException, IllegalStateException, IOException {
+    public void setVideoPath(String filePath) 
+    {
     	this.filePath = filePath; 
 		
 	}
@@ -61,17 +62,23 @@ public class FFMpegMovieViewAndroid extends SurfaceView {
     /**
      * initzialize player
      */
-    private void openVideo(SurfaceHolder surfHolder) {
+    private boolean openVideo(SurfaceHolder surfHolder) {
     	try {
         	mPlayer.setDataSource(filePath);
         	//ORDER is important -- Set display before prepare()!!!
     		mPlayer.setDisplay(surfHolder);
 			mPlayer.prepare();
+			return true;
+			
 		} catch (IllegalStateException e) {
 			Log.e(TAG, "Couldn't prepare player: " + e.getMessage());
 		} catch (IOException e) {
-			Log.e(TAG, "Couldn't prepare player: " + e.getMessage());
+			Log.e(TAG, "IO Exception Couldn't prepare player: " + e.getMessage());
 		}
+    	
+    	
+    	return false;
+    	
     }
     
     private void startVideo() {
@@ -89,7 +96,7 @@ public class FFMpegMovieViewAndroid extends SurfaceView {
     }
     
     public boolean onTouchEvent(android.view.MotionEvent event) {
-    	if(!mMediaController.isShowing()) {
+    	if(mMediaController != null && !mMediaController.isShowing()) {
 			mMediaController.show(3000);
 		}
 		return true;
@@ -101,13 +108,24 @@ public class FFMpegMovieViewAndroid extends SurfaceView {
         }
 
         public void surfaceCreated(SurfaceHolder holder) {
-            openVideo(holder);
-            startVideo();
+            if (openVideo(holder))
+            {
+            	startVideo();
+            }
+            else
+            {
+            	mPlayer = null; 
+            }
         }
 
-        public void surfaceDestroyed(SurfaceHolder holder) {
-			release();
-			if(mMediaController.isShowing()) {
+        public void surfaceDestroyed(SurfaceHolder holder)
+        {
+        	if (mPlayer != null)
+        	{
+        		release();
+        	}
+        	
+			if(mMediaController!= null && mMediaController.isShowing()) {
 				mMediaController.hide();
 			}
         }

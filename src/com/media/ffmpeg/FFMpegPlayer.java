@@ -432,13 +432,19 @@ public class FFMpegPlayer
         return true;
     }
     
-   
-    
-   
-    
+    public void prepare() throws IllegalStateException, IOException
+    {
+    	this._prepare();
+    	
+    	
+    }
     
     @Override
-    protected void finalize() { native_finalize(); }
+    protected void finalize() 
+    { 
+    	native_finalize();
+    	
+    }
     
     public interface IFFMpegPlayer {
     	public void onPlay();
@@ -447,18 +453,9 @@ public class FFMpegPlayer
     	public void onError(String msg, Exception e);
     }
     
-    
-    
-    
     ////////////////////////////////////// 
     
-    
-    public void prepare() throws IllegalStateException, IOException
-    {
-    	this._prepare();
-    	
-    	
-    }
+ 
     
     private PCMPlayer _pcmPlayer; 
     private Thread pcmPlayer_thrd;
