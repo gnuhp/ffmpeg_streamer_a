@@ -121,7 +121,6 @@ status_t MediaPlayer::prepareAudio(JNIEnv *env, jobject thiz)
 		return INVALID_OPERATION;
 	}
 
-
     int sampleRate = codec_ctx->sample_rate; 
     //  public static final int CHANNEL_CONFIGURATION_MONO = 2;
     //  public static final int CHANNEL_CONFIGURATION_STEREO = 3;

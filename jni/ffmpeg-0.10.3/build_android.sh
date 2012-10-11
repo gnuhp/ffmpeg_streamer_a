@@ -154,7 +154,7 @@ function configureARMv7a
 echo ">>>>>>>>>> Config env for Armv7-a With NEON support <<<<<<<<<<<<<<"
 #arm v7n
 CPU=armv7-a
-OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=neon -marm -march=$CPU -mtune=cortex-a8 -mthumb -D__thumb__ "
+OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=neon -marm -march=$CPU -mthumb -D__thumb__ "
 PREFIX=./android/armeabi-v7a 
 ADDITIONAL_CONFIGURE_FLAG=--enable-neon
 X264_PREFIX=../x264/android/$CPU

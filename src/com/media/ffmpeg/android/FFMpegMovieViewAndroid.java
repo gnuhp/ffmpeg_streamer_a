@@ -23,25 +23,25 @@ public class FFMpegMovieViewAndroid extends SurfaceView {
 	
 	public FFMpegMovieViewAndroid(Context context) {
         super(context);
-        initVideoView();
+        SurfaceHolder surfHolder = getHolder();
+    	surfHolder.addCallback(mSHCallback);
     }
     
     public FFMpegMovieViewAndroid(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-        initVideoView();
+        super(context, attrs);
+        SurfaceHolder surfHolder = getHolder();
+    	surfHolder.addCallback(mSHCallback);
     }
     
     public FFMpegMovieViewAndroid(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        initVideoView();
+        SurfaceHolder surfHolder = getHolder();
+    	surfHolder.addCallback(mSHCallback);
     }
     
-    private void initVideoView() {
+    public  void initVideoView() {
     	Log.d(TAG, "creating FFMpegPlayer.. ");
     	mPlayer = new FFMpegPlayer();
-    	
-    	SurfaceHolder surfHolder = getHolder();
-    	surfHolder.addCallback(mSHCallback);
     }
     
     private void attachMediaController() {

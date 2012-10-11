@@ -207,6 +207,15 @@ int Output::VideoDriver_register(JNIEnv* env, jobject jsurface)
     // obtain a native window from a Java surface
     theNativeWindow = ANativeWindow_fromSurface(env, jsurface);
 
+
+    //int32_t ANativeWindow_getWidth(ANativeWindow* window);
+    //int32_t ANativeWindow_getHeight(ANativeWindow* window);
+
+    int width = ANativeWindow_getWidth (theNativeWindow);
+    int height = ANativeWindow_getHeight(theNativeWindow); 
+    LOGI(9,"Output::VideoDriver_register surface: w:%d h:%d", width, height);
+
+
     return 0; 
 }
 

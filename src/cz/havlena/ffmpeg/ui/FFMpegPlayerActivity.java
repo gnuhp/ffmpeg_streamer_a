@@ -22,6 +22,9 @@ public class FFMpegPlayerActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		setContentView(R.layout.ffmpeg_player_activity);
+		mMovieView = (FFMpegMovieViewAndroid) findViewById(R.id.imageVideo);
+		
 		Intent i = getIntent();
 		String filePath = i.getStringExtra(getResources().getString(R.string.input_file));
 		if(filePath == null) {
@@ -33,10 +36,11 @@ public class FFMpegPlayerActivity extends Activity {
 
 			try {
 				FFMpeg ffmpeg = new FFMpeg();
-				mMovieView = ffmpeg.getMovieView(this);
+				//mMovieView = ffmpeg.getMovieView(this);
+				mMovieView.initVideoView(); 
 				mMovieView.setVideoPath(filePath);
 				
-				setContentView(mMovieView);
+				
 			} catch (FFMpegException e) {
 				Log.d(TAG, "Error when initializing ffmpeg: " + e.getMessage());
 				FFMpegMessageBox.show(this, e);
