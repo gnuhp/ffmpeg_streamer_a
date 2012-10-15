@@ -66,7 +66,7 @@ public class FFMpegFileExplorer extends ListActivity {
 				//String url = "rtmp://118.140.96.190:1935/live/cam2.stream";
 				//String url = "http://118.140.96.190:1935/live/cam2.stream/playlist.m3u8";
 
-				String url = "http://192.168.5.112:8090/aaa";
+				String url = "http://192.168.5.101:8090/aaa";
 				Log.d(TAG, " Try to stream  from url : " + url);
 				startPlayer(url);
 

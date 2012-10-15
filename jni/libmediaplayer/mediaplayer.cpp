@@ -264,7 +264,7 @@ status_t MediaPlayer::setListener(MediaPlayerListener* listener)
 
 status_t MediaPlayer::setDataSource(const char *url)
 {
-    __android_log_print(ANDROID_LOG_INFO, TAG, "setDataSource(%s) with av_open_input_file", url);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "setDataSource(%s) with avformat_open_input",  url);
     status_t err = BAD_VALUE;
 
     //* try to init the ffMpeg engine if not done 
@@ -273,9 +273,20 @@ status_t MediaPlayer::setDataSource(const char *url)
         initFFmpegEngine(); 
     }
 
+
+    //20121015:phung: need to allocate the AVFormatContext first
+    mMovieFile = avformat_alloc_context(); 
+    if (!mMovieFile)
+    {
+        __android_log_print(ANDROID_LOG_INFO, TAG, "memory error ");
+		return INVALID_OPERATION;
+
+    }
+
+
 	// Open video file
-	if(av_open_input_file(&mMovieFile, url, NULL, 0, NULL) != 0) {
-	//if(avformat_open_input(&mMovieFile, url, NULL,  NULL) != 0) {
+	//if(av_open_input_file(&mMovieFile, url, NULL, 0, NULL) != 0) {
+	if(avformat_open_input(&mMovieFile, url, NULL,  NULL) != 0) {
 
         __android_log_print(ANDROID_LOG_INFO, TAG, "av_open error ");
 		return INVALID_OPERATION;
