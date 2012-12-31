@@ -87,6 +87,7 @@ function build_one
     --enable-protocol=rtmpte \
     --enable-protocol=rtmps \
     --enable-protocol=rtp \
+    --enable-protocol=rtsp \
     --enable-protocol=tcp \
     --enable-protocol=udp \
     --enable-avformat \
@@ -119,6 +120,8 @@ function build_one
     --enable-decoder=rtp --enable-muxer=rtsp --enable-demuxer=rtsp \
     --enable-libx264 \
     --enable-encoder=libx264 \
+    --enable-decoder=amrnb \
+    --enable-decoder=amrwb \
     $ADDITIONAL_CONFIGURE_FLAG
 
 
@@ -210,9 +213,9 @@ ADDITIONAL_CONFIGURE_FLAG=
 if [ $# -lt 1 ] ; then 
 #full rebuild
 
-configureARMv7a 
-
-build_one || exit 1
+#configureARMv7a 
+#
+#build_one || exit 1
 
 configureARM
 

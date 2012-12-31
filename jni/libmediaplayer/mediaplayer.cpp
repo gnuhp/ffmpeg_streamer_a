@@ -140,7 +140,7 @@ status_t MediaPlayer::prepareAudio(JNIEnv *env, jobject thiz)
     env->CallVoidMethod(thiz, native_startPcmPlayer,sampleRate, num_channels); 
 
 
-	__android_log_print(ANDROID_LOG_INFO, TAG, "prepareAudio DONE\n");
+	__android_log_print(ANDROID_LOG_INFO, TAG, "prepareAudio DONE codecID: %d\n", codec_ctx->codec_id);
 	return NO_ERROR;
 }
 
@@ -442,13 +442,16 @@ void MediaPlayer::decodeMovie(void* ptr)
 	mDecoderAudio->onDecode = decode;
 	mDecoderAudio->startAsync();
 	
+
+    __android_log_print(ANDROID_LOG_INFO, TAG, "decodeMovie stream_audio codecid: %d\n", stream_audio->codec->codec->id );
+
 	AVStream* stream_video = mMovieFile->streams[mVideoStreamIndex];
 	mDecoderVideo = new DecoderVideo(stream_video);
 	mDecoderVideo->onDecode = decode;
 	mDecoderVideo->startAsync();
 	
 	mCurrentState = MEDIA_PLAYER_STARTED;
-	__android_log_print(ANDROID_LOG_INFO, TAG, "MediaPlayer::decodeMovie %ix%i\n", mVideoWidth, mVideoHeight);
+//_android_log_print(ANDROID_LOG_INFO, TAG, "MediaPlayer::decodeMovie %ix%i\n", mVideoWidth, mVideoHeight);
 	while (mCurrentState != MEDIA_PLAYER_DECODED && mCurrentState != MEDIA_PLAYER_STOPPED &&
 		   mCurrentState != MEDIA_PLAYER_STATE_ERROR)
 	{
@@ -472,6 +475,7 @@ void MediaPlayer::decodeMovie(void* ptr)
 		} 
 		else if (pPacket.stream_index == mAudioStreamIndex) 
         {
+            
 			mDecoderAudio->enqueue(&pPacket);
 		}
 		else 

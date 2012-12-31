@@ -18,6 +18,7 @@ public:
 private:
     AVCodec *pcm_codec;
     AVCodecContext *pcm_c;
+    static SwrContext * swr; 
 
     //	AVFrame*					mFrame;
     int16_t*                    mSamples;
@@ -28,7 +29,14 @@ private:
     bool                        process(AVPacket *packet);
 
     int                         encodeToPcm_init();
-    void                        encodeToPcm(int16_t * adpcm_buffer, int len);
+    void                        encodeAdpcmToPcm(int16_t * adpcm_buffer, int len);
+    
+    //void encodeAmrnbToPcm(AVFrame * mFrame);
+    int encodeAmrnbToPcm (uint8_t * buffer, int len);
+    int encode_audio_with_resampling( AVCodecContext *  enc, AVCodecContext * dec,  AVFrame *decoded_frame);
+
+
+
 };
 
 #endif //FFMPEG_DECODER_AUDIO_H

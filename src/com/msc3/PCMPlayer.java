@@ -2,6 +2,7 @@ package com.msc3;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -48,6 +50,9 @@ public class PCMPlayer implements Runnable {
 	private int pcmFreq; 
 	private int numChannels; 
 	
+	private boolean debug_write_to_file = true;
+	
+	
 	public PCMPlayer(int freq, int num_channels) {
 		_isAlive =true;
 		_buffers = new ArrayList<byte[]>();
@@ -60,7 +65,13 @@ public class PCMPlayer implements Runnable {
 		read_next = 0;
 		write_next = 0;
 		
-		filename = "aaddd";
+		if (debug_write_to_file)
+		{
+			String path = Environment.getExternalStorageDirectory().getPath() + File.separator;
+			filename = path + "test.pcm";
+			Log.d("mbp", "AUDIO data is " + filename); 
+		}
+		
 		
 		for (int i =0; i< NUM_BUFF; i++)
 		{
@@ -104,8 +115,11 @@ public class PCMPlayer implements Runnable {
 				maxBufferSize, 
 				AudioTrack.MODE_STREAM);
 
-		//initWriteTofile();
-
+		if (debug_write_to_file)
+		{
+			initWriteTofile();
+		}
+		
 
 		/*Log.d("mbp", "minBufferSize: " + minBufferSize+ 
 				" maxBuff:" + maxBufferSize); */
@@ -333,42 +347,22 @@ public class PCMPlayer implements Runnable {
 		
 		
 
-		//// END OF DBG 
-		//DBG write pcm data to file
-		//writeAudioDataToFile(pcm,pcm_len);
+		if (debug_write_to_file ==true)
+		{
+			//DBG write pcm data to file
+			writeAudioDataToFile(pcm,pcm_len);
+		}
 	}
 	
 	
 	
-	/**** Keep index on the sub buffer */
-//	private int sub_buffer_offset = 0;
-//	public void writePCM_new(byte[] pcm, int pcm_len) {
-//		synchronized(s_buffers) 
-//		{
-//			
-//			if (( sub_buffer_offset + pcm_len) <= ONE_BUFF_SIZE )
-//			{
-//				System.arraycopy(pcm, 0, s_buffers[write_next], sub_buffer_offset, pcm_len);
-//				sub_buffer_offset += pcm_len;
-//			}
-//			else
-//			{
-//				/* reset the sub_buffer_offset and move to the next buffer */
-//				sub_buffer_offset=0;
-//				write_next = (write_next +1 )%NUM_BUFF;
-//				System.arraycopy(pcm, 0, s_buffers[write_next], sub_buffer_offset, pcm_len);
-//				sub_buffer_offset += pcm_len;
-//				
-//				
-//			}
-//		}
-//	}
-	
 	public void stop() {
 		_isAlive = false;
 		
-		
-		//stopWriteTofile();
+		if (debug_write_to_file)
+		{
+			stopWriteTofile();
+		}
 		
 	}
 
@@ -406,7 +400,7 @@ public class PCMPlayer implements Runnable {
 		int read = 0;
 
 		try {
-			os.write(pcm);
+			os.write(pcm, 0, pcm_len);
 		} catch (IOException e) {
 			Log.e("mbp", "ERROR WHILE WRITING");
 			os = null;
