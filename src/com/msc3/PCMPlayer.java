@@ -50,7 +50,7 @@ public class PCMPlayer implements Runnable {
 	private int pcmFreq; 
 	private int numChannels; 
 	
-	private boolean debug_write_to_file = true;
+	private boolean debug_write_to_file = false;
 	
 	
 	public PCMPlayer(int freq, int num_channels) {
@@ -397,7 +397,6 @@ public class PCMPlayer implements Runnable {
 			Log.e("mbp", "ERROR NO OUTPUT STREAM");
 			return; 
 		}
-		int read = 0;
 
 		try {
 			os.write(pcm, 0, pcm_len);

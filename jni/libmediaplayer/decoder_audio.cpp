@@ -43,20 +43,38 @@ bool DecoderAudio::process(AVPacket *packet)
 
     int got_frame; 
     AVFrame mFrame; 
-    int ret = avcodec_decode_audio4(mStream->codec,&mFrame, &got_frame, packet); 
-    __android_log_print(ANDROID_LOG_INFO, TAG,"ret : %d\n", ret);
-
     AVCodecContext *avctx = mStream->codec;
     
     if (avctx->codec->id == CODEC_ID_AMR_NB )
     {
-        //encodeAmrnbToPcm(&mFrame); 
-        //encodeAmrnbToPcm((uint8_t*) mSamples,size); 
 
-        encode_audio_with_resampling(pcm_c, avctx,  &mFrame); 
+        int ret = 0;  
+
+        int size = packet->size; 
+
+        //1 packet can contain several frames .. 
+        do
+        {
+            ret = avcodec_decode_audio4(mStream->codec,&mFrame, &got_frame, packet); 
+            //__android_log_print(ANDROID_LOG_INFO, TAG,"ret : %d pktsize:%d\n", ret, packet->size);
+
+            encode_audio_with_resampling(pcm_c, avctx,  &mFrame); 
+
+            packet->data += ret; 
+            packet->size -= ret; 
+        }
+        while (packet->size >0  || !packet->data);
+
+
+        //Reset the point so that av_free .. can be called 
+        packet->data -= size; 
+        packet->size = size; 
     }
     else 
     {
+
+        int ret = avcodec_decode_audio4(mStream->codec,&mFrame, &got_frame, packet); 
+
 
         if (ret >= 0 && got_frame) {
             int ch, plane_size;
@@ -143,6 +161,7 @@ bool DecoderAudio::decode(void* ptr)
             mRunning = false;
             continue;
         }
+
         // Free the packet that was allocated by av_read_frame
         av_free_packet(&pPacket);
 
@@ -182,6 +201,7 @@ int DecoderAudio::encodeToPcm_init()
     pcm_c->sample_rate =  avctx->sample_rate;
     pcm_c->channels = avctx->channels ;
     pcm_c->sample_fmt = AV_SAMPLE_FMT_S16;
+    pcm_c->channel_layout = av_get_default_channel_layout( pcm_c->channels);
 
     /* open it */
     if (avcodec_open(pcm_c, pcm_codec) < 0) {
@@ -234,7 +254,8 @@ int DecoderAudio::encode_audio_with_resampling( AVCodecContext *  enc, AVCodecCo
 
     int osize = av_get_bytes_per_sample(enc->sample_fmt);
     int isize = av_get_bytes_per_sample(dec->sample_fmt);
-    uint8_t *buf = decoded_frame->data[0];
+    //uint8_t *buf = decoded_frame->data[0];
+    uint8_t *buf = decoded_frame->extended_data[0];
     int size     = decoded_frame->nb_samples * dec->channels * isize;
 
 
@@ -254,10 +275,7 @@ int DecoderAudio::encode_audio_with_resampling( AVCodecContext *  enc, AVCodecCo
         return -1; 
     }
 
-    __android_log_print(ANDROID_LOG_INFO, TAG,
-            " audio_buf_size:%d   \n", audio_buf_size);
-
-
+    
     av_fast_malloc(&audio_buf, &allocated_audio_buf_size, audio_buf_size);
     if (!audio_buf) {
         __android_log_print(ANDROID_LOG_INFO, TAG,
@@ -358,9 +376,9 @@ int DecoderAudio::encode_audio_with_resampling( AVCodecContext *  enc, AVCodecCo
         size_out = size;
     }
 
-    __android_log_print(ANDROID_LOG_INFO, TAG,
-            " size:%d  isize:%d osize:%d size_out:%d \n",
-             size, isize, osize, size_out);
+    //__android_log_print(ANDROID_LOG_INFO, TAG,
+    //        " size:%d  isize:%d osize:%d size_out:%d \n",
+    //         size, isize, osize, size_out);
 
 
 
@@ -371,7 +389,7 @@ int DecoderAudio::encode_audio_with_resampling( AVCodecContext *  enc, AVCodecCo
     // encode PCM & play 
     //encodeAmrnbToPcm(buftmp,size_out); 
 
-    onDecode((int16_t*)buftmp, size_out/2);
+    onDecode((int16_t*)buftmp, size_out);
 
 
     return 0; 
