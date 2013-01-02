@@ -138,12 +138,6 @@ public:
 	status_t        setAudioStreamType(int type);
 	status_t		prepare(JNIEnv *env, jobject thiz);
 	void            notify(int msg, int ext1, int ext2);
-//    static  sp<IMemory>     decode(const char* url, uint32_t *pSampleRate, int* pNumChannels, int* pFormat);
-//    static  sp<IMemory>     decode(int fd, int64_t offset, int64_t length, uint32_t *pSampleRate, int* pNumChannels, int* pFormat);
-//    static  int             snoop(short *data, int len, int kind);
-//            status_t        invoke(const Parcel& request, Parcel *reply);
-//            status_t        setMetadataFilter(const Parcel& filter);
-//            status_t        getMetadata(bool update_only, bool apply_filter, Parcel *metadata);
 	status_t        suspend();
 	status_t        resume();
 
@@ -155,8 +149,8 @@ private:
 	static void*				startPlayer(void* ptr);
 
 	static void 				decode(AVFrame* frame, double pts);
-    static void 				decode(int16_t* buffer, int buffer_size);
-    //static void decode(AVFrame* buffer, int buffer_size); 
+    static void 				decode(uint8_t* buffer, int buffer_size);
+    //static void 				decode(int16_t* buffer, int buffer_size);
 
 	void						decodeMovie(void* ptr);
 	

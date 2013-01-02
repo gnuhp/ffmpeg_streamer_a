@@ -406,7 +406,8 @@ void MediaPlayer::decode(AVFrame* frame, double pts)
 	Output::VideoDriver_updateSurface();
 }
 
-void MediaPlayer::decode(int16_t* buffer, int buffer_size)
+//void MediaPlayer::decode(int16_t* buffer, int buffer_size)
+void MediaPlayer::decode(uint8_t* buffer, int buffer_size)
 {
 	if(FPS_DEBUGGING) {
         __android_log_print(ANDROID_LOG_INFO, TAG, "onDecodeA FPS debug");

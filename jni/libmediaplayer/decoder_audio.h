@@ -3,8 +3,8 @@
 
 #include "decoder.h"
 
-typedef void (*AudioDecodingHandler) (int16_t*,int);
-//typedef void (*AudioDecodingHandler) (AVFrame*,int);
+//typedef void (*AudioDecodingHandler) (int16_t*,int);
+typedef void (*AudioDecodingHandler) (uint8_t*,int);
 
 class DecoderAudio : public IDecoder
 {
@@ -18,9 +18,8 @@ public:
 private:
     AVCodec *pcm_codec;
     AVCodecContext *pcm_c;
-    static SwrContext * swr; 
+    struct SwrContext * swr; 
 
-    //	AVFrame*					mFrame;
     int16_t*                    mSamples;
     int                         mSamplesSize;
 
@@ -29,11 +28,10 @@ private:
     bool                        process(AVPacket *packet);
 
     int                         encodeToPcm_init();
-    void                        encodeAdpcmToPcm(int16_t * adpcm_buffer, int len);
-    
-    //void encodeAmrnbToPcm(AVFrame * mFrame);
-    int encodeAmrnbToPcm (uint8_t * buffer, int len);
     int encode_audio_with_resampling( AVCodecContext *  enc, AVCodecContext * dec,  AVFrame *decoded_frame);
+    //Obsolete funcs: 
+    //void                        encodeAdpcmToPcm(int16_t * adpcm_buffer, int len);
+    // int encodeAmrnbToPcm (uint8_t * buffer, int len);
 
 
 

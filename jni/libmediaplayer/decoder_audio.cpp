@@ -13,6 +13,8 @@
 #define __android_log_print(ANDROID_LOG_INFO, TAG, ...) printf(__VA_ARGS__)
 #endif 
 
+//struct SwrContext * DecoderAudio::swr; 
+
 DecoderAudio::DecoderAudio(AVStream* stream) : IDecoder(stream)
 {
 }
@@ -45,7 +47,7 @@ bool DecoderAudio::process(AVPacket *packet)
     AVFrame mFrame; 
     AVCodecContext *avctx = mStream->codec;
     
-    if (avctx->codec->id == CODEC_ID_AMR_NB )
+#if 1
     {
 
         int ret = 0;  
@@ -70,6 +72,7 @@ bool DecoderAudio::process(AVPacket *packet)
         packet->data -= size; 
         packet->size = size; 
     }
+#else  //NOT USED  
     else 
     {
 
@@ -109,14 +112,6 @@ bool DecoderAudio::process(AVPacket *packet)
             {
                 encodeAdpcmToPcm(mSamples, size); 
             }
-            //else if (avctx->codec->id == CODEC_ID_AMR_NB )
-            //{
-            //    //encodeAmrnbToPcm(&mFrame); 
-            //    //encodeAmrnbToPcm((uint8_t*) mSamples,size); 
-
-            //    encode_audio_with_resampling(pcm_c, avctx,  &mFrame); 
-            //}
-
             else
             {
                 __android_log_print(ANDROID_LOG_INFO, TAG, "unhandle codec id:%d", avctx->codec->id);
@@ -129,6 +124,7 @@ bool DecoderAudio::process(AVPacket *packet)
         }
 
     }
+#endif 
 
     return true;
 }
@@ -217,71 +213,24 @@ int DecoderAudio::encodeToPcm_init()
 
 }
 
-void DecoderAudio::encodeAdpcmToPcm(int16_t * adpcm_buffer, int len)
-{
-    int out_size = -1; 
-
-    int outbuf_size = len;
-    uint8_t *  outbuf = (uint8_t *) malloc(outbuf_size);
 
 
-
-    out_size = avcodec_encode_audio(pcm_c, outbuf, outbuf_size, adpcm_buffer); 
-
-    __android_log_print(ANDROID_LOG_INFO, TAG, "encodeAdpcmToPcm size: %d\n", out_size );
-    if (outbuf_size >0)
-    {
-        onDecode( (int16_t*)outbuf, out_size);
-    }
-
-
-    free(outbuf); 
-}
-
-
-
-//TODO: move to .h 
-struct SwrContext * DecoderAudio::swr; 
-static uint8_t *audio_buf;
-static unsigned int allocated_audio_buf_size;
 
 // SRC: ffmpeg.c ---- do_audio_out()..
 int DecoderAudio::encode_audio_with_resampling( AVCodecContext *  enc, AVCodecContext * dec,  AVFrame *decoded_frame)
 {
     
     uint8_t *buftmp;
-    int64_t audio_buf_size,  size_out; 
+    int64_t   size_out; 
 
     int osize = av_get_bytes_per_sample(enc->sample_fmt);
     int isize = av_get_bytes_per_sample(dec->sample_fmt);
-    //uint8_t *buf = decoded_frame->data[0];
-    uint8_t *buf = decoded_frame->extended_data[0];
+    uint8_t *buf = decoded_frame->data[0];
     int size     = decoded_frame->nb_samples * dec->channels * isize;
 
 
     int audio_resample = 0; 
     int audio_sync_method  = 0; 
-
-    audio_buf_size  = (0 /*allocated_for_size*/ + isize * dec->channels - 1) / (isize * dec->channels);
-    audio_buf_size  = (audio_buf_size * enc->sample_rate + dec->sample_rate) / dec->sample_rate;
-    audio_buf_size  = audio_buf_size * 2 + 10000; // safety factors for the deprecated resampling API
-    audio_buf_size  = FFMAX(audio_buf_size, AVCODEC_MAX_AUDIO_FRAME_SIZE);
-    audio_buf_size *= osize * enc->channels;
-
-
-    if (audio_buf_size > INT_MAX) {
-        __android_log_print(ANDROID_LOG_INFO, TAG,
-                "Buffer sizes too large\n");
-        return -1; 
-    }
-
-    
-    av_fast_malloc(&audio_buf, &allocated_audio_buf_size, audio_buf_size);
-    if (!audio_buf) {
-        __android_log_print(ANDROID_LOG_INFO, TAG,
-                "Out of memory in do_audio_out\n");
-        return -1; 
-    }   
 
     if (enc->channels != dec->channels
             || enc->sample_fmt != dec->sample_fmt
@@ -356,17 +305,15 @@ int DecoderAudio::encode_audio_with_resampling( AVCodecContext *  enc, AVCodecCo
 
     if (audio_resample) 
     {
-        buftmp = audio_buf;
-        size_out = swr_convert(swr, ( uint8_t*[]){buftmp}, audio_buf_size / (enc->channels * osize),
+        buftmp = (uint8_t *) mSamples;
+        size_out = swr_convert(swr, ( uint8_t*[]){buftmp}, mSamplesSize  / (enc->channels * osize),
                 (const uint8_t*[]){buf   }, size / (dec->channels * isize));
 
-        if (size_out == audio_buf_size / (enc->channels * osize))
+        if (size_out ==  (mSamplesSize  / (enc->channels * osize))) 
         {
             __android_log_print(ANDROID_LOG_INFO, TAG,
                                         "Warning: audio buff is probably too small");
         }
-
-
 
         size_out = size_out * enc->channels * osize;
     } 
@@ -380,21 +327,14 @@ int DecoderAudio::encode_audio_with_resampling( AVCodecContext *  enc, AVCodecCo
     //        " size:%d  isize:%d osize:%d size_out:%d \n",
     //         size, isize, osize, size_out);
 
-
-
-
-
-    //encode_audio_frame(s, ost, buftmp, size_out);
-
-    // encode PCM & play 
-    //encodeAmrnbToPcm(buftmp,size_out); 
-
-    onDecode((int16_t*)buftmp, size_out);
+    onDecode(buftmp, size_out);
 
 
     return 0; 
 }
 
+
+#if 0
 /* SRC: ffmpeg.c ---  int encode_audio_frame(....)
     TODO:  clean up 
  */ 
@@ -456,44 +396,28 @@ int DecoderAudio::encodeAmrnbToPcm(uint8_t * buf, int buf_size)
 
     return ret;
 }
-
-#if 0
-void DecoderAudio::encodeAmrnbToPcm(AVFrame  *mFrame)
-{
-    AVPacket pkt = { 0 };
-    av_init_packet(&pkt); 
-    int got_packet, ret; 
-
-    ret = avcodec_encode_audio2(pcm_c, &pkt, mFrame, &got_packet);
-    if (ret < 0)
-    {
-        __android_log_print(ANDROID_LOG_INFO, TAG, "encodeAmrnbToPcm  error encoding frame\n" );
-    }
-    else
-    {
-
-        __android_log_print(ANDROID_LOG_INFO, TAG, "encodeAmrnbToPcm  ret: %d\n",ret );
-
-        if (!got_packet)
-        {
-            return;
-        }
-        else
-        {
-            __android_log_print(ANDROID_LOG_INFO, TAG, "encodeAmrnbToPcm  datasize: %d\n", pkt.size );
-
-            //Copy PCM data now.. 
-            memcpy(mSamples, pkt.data, pkt.size);
-            onDecode(mSamples, pkt.size); 
-        }
-
-
-
-    }
-
-    av_free_packet(&pkt); 
-
-}
 #endif 
 
+#if 0
+void DecoderAudio::encodeAdpcmToPcm(int16_t * adpcm_buffer, int len)
+{
+    int out_size = -1; 
+
+    int outbuf_size = len;
+    uint8_t *  outbuf = (uint8_t *) malloc(outbuf_size);
+
+
+
+    out_size = avcodec_encode_audio(pcm_c, outbuf, outbuf_size, adpcm_buffer); 
+
+    __android_log_print(ANDROID_LOG_INFO, TAG, "encodeAdpcmToPcm size: %d\n", out_size );
+    if (outbuf_size >0)
+    {
+        onDecode( (int16_t*)outbuf, out_size);
+    }
+
+
+    free(outbuf); 
+}
+#endif 
 
