@@ -83,7 +83,10 @@ public class FFMpegFileExplorer extends ListActivity {
 			@Override
 			public void onClick(View v) {
 				
-				String url = "rtsp://192.168.5.102:554/amrtest";
+				//String url = "rtsp://192.168.5.102:554/amrtest";
+				
+				//gst rtsp
+				String url = "rtsp://192.168.5.102:8554/test";
 				Log.d(TAG, " Try to stream  from url : " + url);
 				startPlayer(url);
 
