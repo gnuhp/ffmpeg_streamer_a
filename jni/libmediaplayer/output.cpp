@@ -337,7 +337,10 @@ int Output::VideoDriver_updateSurface( )
         return 0;
     }
     //Copy picture 
-    memcpy(pictureBuffer->bits, pictureRGB, 640*480*sizeof(uint16_t));
+    //memcpy(pictureBuffer->bits, pictureRGB, 640*480*sizeof(uint16_t));
+    //memcpy(pictureBuffer->bits, pictureRGB, 1280*720*sizeof(uint16_t));
+    memcpy(pictureBuffer->bits, pictureRGB,
+            pictureBuffer->width* pictureBuffer->height* sizeof(uint16_t)); 
 
     ANativeWindow_unlockAndPost( theNativeWindow );
 #endif
