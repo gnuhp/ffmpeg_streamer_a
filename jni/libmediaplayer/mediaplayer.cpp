@@ -30,7 +30,7 @@ extern "C" {
 #include <android/log.h>
 #endif
 
-#define FPS_DEBUGGING false
+#define FPS_DEBUGGING true
 
 #ifdef ANDROID_BUILD
 #define LOGI(level, ...) if (level <= LOG_LEVEL) {__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__);}
@@ -59,6 +59,7 @@ MediaPlayer::MediaPlayer()
     mVideoWidth = mVideoHeight = 0;
     sPlayer = this;
     ffmpegEngineInitialized = false; 
+    mAudioMuted = false; 
 }
 
 MediaPlayer::~MediaPlayer()
@@ -106,9 +107,11 @@ status_t MediaPlayer::prepareAudio(JNIEnv *env, jobject thiz)
 	AVCodecContext* codec_ctx = stream->codec;
 	AVCodec* codec = avcodec_find_decoder(codec_ctx->codec_id);
 	if (codec == NULL) {
-        __android_log_print(ANDROID_LOG_INFO, TAG, "prepareAudio Could not find audio codec. Maybe the stream has no audio\n");
+        __android_log_print(ANDROID_LOG_INFO, TAG, "prepareAudio Could not find audio codec. Maybe the stream has no audio OR codec %d not supported\n", codec_ctx->codec_id);
 
-		return INVALID_OPERATION;
+        mAudioMuted = true; 
+	//	return INVALID_OPERATION;
+		return NO_ERROR;
 	}
 
 
@@ -410,7 +413,6 @@ void MediaPlayer::decode(AVFrame* frame, double pts)
 void MediaPlayer::decode(uint8_t* buffer, int buffer_size)
 {
 	if(FPS_DEBUGGING) {
-        __android_log_print(ANDROID_LOG_INFO, TAG, "onDecodeA FPS debug");
 		timeval pTime;
 		static int frames = 0;
 		static double t1 = -1;
@@ -438,15 +440,26 @@ void MediaPlayer::decodeMovie(void* ptr)
     int status; 
 	AVPacket pPacket;
 	
-	AVStream* stream_audio = mMovieFile->streams[mAudioStreamIndex];
-	mDecoderAudio = new DecoderAudio(stream_audio);
-	mDecoderAudio->onDecode = decode;
-	mDecoderAudio->startAsync();
+    if (mAudioMuted == false)
+    {
+        AVStream* stream_audio = mMovieFile->streams[mAudioStreamIndex];
+        mDecoderAudio = new DecoderAudio(stream_audio);
+        mDecoderAudio->onDecode = decode;
+        mDecoderAudio->startAsync();
+
+        __android_log_print(ANDROID_LOG_INFO, TAG, "decodeMovie stream_audio codecid: %d\n", stream_audio->codec->codec->id );
+
+
+    }
+    else
+    {
+        
+        mDecoderAudio = NULL; 
+        __android_log_print(ANDROID_LOG_INFO, TAG, "decodeMovie NO AUDIO \n");
+    }
 	
 
-    __android_log_print(ANDROID_LOG_INFO, TAG, "decodeMovie stream_audio codecid: %d\n", stream_audio->codec->codec->id );
-
-	AVStream* stream_video = mMovieFile->streams[mVideoStreamIndex];
+    AVStream* stream_video = mMovieFile->streams[mVideoStreamIndex];
 	mDecoderVideo = new DecoderVideo(stream_video);
 	mDecoderVideo->onDecode = decode;
 	mDecoderVideo->startAsync();
@@ -456,9 +469,23 @@ void MediaPlayer::decodeMovie(void* ptr)
 	while (mCurrentState != MEDIA_PLAYER_DECODED && mCurrentState != MEDIA_PLAYER_STOPPED &&
 		   mCurrentState != MEDIA_PLAYER_STATE_ERROR)
 	{
-		if (mDecoderVideo->packets() > FFMPEG_PLAYER_MAX_QUEUE_SIZE &&
-				mDecoderAudio->packets() > FFMPEG_PLAYER_MAX_QUEUE_SIZE) {
-			usleep(200);
+        
+		if (mDecoderVideo->packets() > FFMPEG_PLAYER_MAX_QUEUE_SIZE 
+           ) 
+        {
+
+            if  (mAudioMuted == true) 
+            {
+                usleep(200);
+            }
+            else
+            {
+                if (mDecoderAudio->packets() > FFMPEG_PLAYER_MAX_QUEUE_SIZE)
+                {
+                    usleep(200); 
+                }
+
+            }
 			continue;
 		}
 		
@@ -476,8 +503,14 @@ void MediaPlayer::decodeMovie(void* ptr)
 		} 
 		else if (pPacket.stream_index == mAudioStreamIndex) 
         {
-            
-			mDecoderAudio->enqueue(&pPacket);
+            if ( mAudioMuted == false)
+            {
+                mDecoderAudio->enqueue(&pPacket);
+            }
+            else
+            {
+                av_free_packet(&pPacket); 
+            }
 		}
 		else 
         {

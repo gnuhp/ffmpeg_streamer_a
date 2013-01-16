@@ -9,7 +9,7 @@
 #include "decoder_audio.h"
 #include "decoder_video.h"
 
-#define FFMPEG_PLAYER_MAX_QUEUE_SIZE 10
+#define FFMPEG_PLAYER_MAX_QUEUE_SIZE 10*10
 
 using namespace android;
 
@@ -183,6 +183,7 @@ private:
     int                         mVideoWidth;
     int                         mVideoHeight;
     bool                       ffmpegEngineInitialized; 
+    bool                        mAudioMuted; 
 };
 
 #endif // FFMPEG_MEDIAPLAYER_H

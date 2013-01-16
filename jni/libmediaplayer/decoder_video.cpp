@@ -15,6 +15,7 @@
 #define __android_log_print(ANDROID_LOG_INFO, TAG, ...) fprintf(stdout, __VA_ARGS__)
 #endif 
 static uint64_t global_video_pkt_pts = AV_NOPTS_VALUE;
+static int decoder_reorder_pts = -1; 
 
 DecoderVideo::DecoderVideo(AVStream* stream) : IDecoder(stream)
 {
@@ -57,7 +58,7 @@ double DecoderVideo::synchronize(AVFrame *src_frame, double pts) {
 bool DecoderVideo::process(AVPacket *packet)
 {
     int	completed = 0;
-    int pts = 0;
+    int64_t  pts = 0;
 
 	// Decode video frame
     int status = avcodec_decode_video2(mStream->codec,
@@ -65,8 +66,54 @@ bool DecoderVideo::process(AVPacket *packet)
             &completed,
             packet);
 
+    if (completed) {
+        int ret = 1; 
+
+        if (decoder_reorder_pts == -1) {
+            pts = (int64_t)av_opt_ptr(avcodec_get_frame_class(), mFrame, "best_effort_timestamp");
+        } else if (decoder_reorder_pts) {
+            pts = mFrame->pkt_pts;
+        } else {
+            pts = mFrame->pkt_dts;
+        }    
+
+        if (pts == AV_NOPTS_VALUE) {
+            pts = 0; 
+        }    
+
+#if 0
+        if (((is->av_sync_type == AV_SYNC_AUDIO_MASTER && is->audio_st) || is->av_sync_type == AV_SYNC_EXTERNAL_CLOCK) &&
+                (framedrop>0 || (framedrop && is->audio_st))) {
+            SDL_LockMutex(is->pictq_mutex);
+            if (is->frame_last_pts != AV_NOPTS_VALUE && *pts) {
+                double clockdiff = get_video_clock(is) - get_master_clock(is);
+                double dpts = av_q2d(is->video_st->time_base) * *pts;
+                double ptsdiff = dpts - is->frame_last_pts;
+                if (fabs(clockdiff) < AV_NOSYNC_THRESHOLD &&
+                        ptsdiff > 0 && ptsdiff < AV_NOSYNC_THRESHOLD &&
+                        clockdiff + ptsdiff - is->frame_last_filter_delay < 0) { 
+                    is->frame_last_dropped_pos = pkt->pos;
+                    is->frame_last_dropped_pts = dpts;
+                    is->frame_drops_early++;
+                    ret = 0; 
+                }    
+            }    
+            SDL_UnlockMutex(is->pictq_mutex);
+        }    
+#else
+
+		onDecode(mFrame,(int) pts);
+
+		return true;
+
+#endif
+
+    }    
+    return false ;
 
 
+
+#if 0
 	//__android_log_print(ANDROID_LOG_INFO, TAG, "avcodec_decode_video2 return: %d completed: %d\n",
     //        status, completed);
 
@@ -89,6 +136,7 @@ bool DecoderVideo::process(AVPacket *packet)
 		return true;
 	}
 	return false;
+#endif 
 }
 
 bool DecoderVideo::decode(void* ptr)
